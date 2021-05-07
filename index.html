@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<script src="https://cdn.jsdelivr.net/npm/pp-router.js@1.0.7/pp-router.min.js" ></script>
+	<script src="https://cdn.jsdelivr.net/npm/pp-model.js@1.0.7/pp-model.min.js" ></script>
+	<script src="https://cdn.jsdelivr.net/npm/pp-elementjson.js@1.0.0/pp-elementjson.min.js" ></script>
+
+	<title>Document</title>
+</head>
+<body>
+<div pp-view="main" ></div>
+<script type="text/javascript" >
+
+	var ppView = function( options ){
+
+		this.controller = options.controller || function(){};
+
+		var model = new ppModel();
+
+		var element = new ElementJs();
+
+		var ppElem = new element();
+
+
+		ppElem.load( options.elemJson || null );
+
+		this.model = new model(options.model) || {};
+
+		var view = options.view || null;
+
+		if( view != null ){
+
+			this.element = document.querySelector('[pp-view='+view+']');			
+
+		}
+		
+
+		this.render = function( html ){
+
+			this.element.innerHTML = html;
+
+		}
+
+
+		this.render( ppElem.render() );
+	}
+
+	var router = new ppRouter(    
+		{
+		    "/":new ppView({
+
+		    	view:"main",
+
+		    	model:{
+
+		    		title:"esto es un titulo"
+
+		    	},
+		    	elemJson:{
+		    		tag:"h1",
+		    		beforeContent:"Hello Work",
+		    		children:[{
+		    			tag:"span",
+		    			beforeContent:"HOLA",
+		    			attr:{
+		    				style:"color:red;"
+		    			}
+		    		}]
+		    	},
+		    	methods:{
+
+		    		hello:function(){
+
+		    			console.log( "Esto es un hello desde el h1" );
+
+		    		}
+		    	},		    	
+		    	controller:function(){		    	
+	    			    		
+		    		
+
+		    	}
+		    }),
+		}
+	);
+	router.start();
+</script>
+</body>
+</html>
