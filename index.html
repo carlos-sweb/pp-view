@@ -4,63 +4,139 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
-	<script src="https://cdn.jsdelivr.net/npm/pp-router.js@1.0.7/pp-router.min.js" ></script>
-	<script src="https://cdn.jsdelivr.net/npm/pp-model.js@1.0.7/pp-model.min.js" ></script>
-	<script src="https://cdn.jsdelivr.net/npm/pp-elementjson.js@1.0.0/pp-elementjson.min.js" ></script>
+
+	
+	
 
 	<title>Document</title>
 </head>
 <body>
 <div pp-view="main" ></div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/pp-model.js@1.0.7/pp-model.min.js" ></script>
+<script src="https://cdn.jsdelivr.net/npm/pp-elementjson.js@1.0.2/pp-elementjson.min.js" ></script>
+<script src="https://cdn.jsdelivr.net/npm/pp-events@1.0.5/pp-events.min.js" ></script>
+
+
 <script type="text/javascript" >
+"use strict";
+(function(global , factory ){
 
-	var ppView = function( options ){
+  	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+  	
+  	typeof define === 'function' && define.amd ? define('ppView', factory) :
+	
+	(global = global || self, (function () {
+        
+    var exports = global.ppView = factory( ppModel , ppElementjson , ppEvents );
 
-		this.controller = options.controller || function(){};
+	}()
+	
+));
 
-		var model = new ppModel();
+})( this,(function( _model , _elementjson , _events ) {
+	
 
-		var element = new ElementJs();
+	return function( options ){
 
-		var ppElem = new element();
+		this.render = function( html ){
+
+			if( typeof html == 'string' && this.element != null ){
+				this.element.innerHTML = html;
+			}
+			// AQUI EJECUTAMOS LOS EVENTOS			
+			var keys = Object.keys(options.events);
+			for( var i = 0 ; i < keys.length ; i++ ){
+
+				var element = keys[i].split("|")[0]
+				var event = keys[i].split("|")[1]
+				console.log( element );
+
+				var elements = document.querySelectorAll( element );
+				elements.forEach(( elem )=>{
+
+					elem.addEventListener(event, options.methods[options.events[keys[i]]] )
+
+				});
+				console.log(elements);
+			}
+			// AQUI EJECUTAMOS LOS EVENTOS
+		}
+
+		/*
+		*@name isFunction
+		*@type Function
+		*@description es una funcion que verifica is el parametro
+		*entregado es una funcion
+		*/
+		function isFunction(func) {
+			return func && {}.toString.call(func) === '[object Function]';
+		}
+
+		// DEFINIMOS UN CONTROLLER EN EL VIEW
+		
+
+		this.controller = isFunction(options.controller) ?
+		options.controller :  function(){};
+		
 
 
-		ppElem.load( options.elemJson || null );
 
-		this.model = new model(options.model) || {};
+				
+		// MODEL
+		var model =  isFunction( _model )  ?  new _model() : null;
+
+		this.model = model == null ?  options.model :  new model(options.model) ;
+
+		// EVENTS
+		this.events = isFunction(_events) ? new _events() : null ;
+
+		// ELEMENTjSON
+		var elemjson = isFunction(_elementjson) ?  new _elementjson() : null;
+
+		if( isFunction(elemjson.load) ){ elemjson.load( options.templateJson || [] ); };
+		
 
 		var view = options.view || null;
 
 		if( view != null ){
-
-			this.element = document.querySelector('[pp-view='+view+']');			
-
+			this.element = document.querySelector('[pp-view='+view+']');
 		}
+		// RENDERIZAMOS A BASE DE ELEMENTJSON
+		if( isFunction(elemjson.render) ){
+			this.render( elemjson.render() );
+		};
+
+
 		
 
-		this.render = function( html ){
-
-			this.element.innerHTML = html;
-
-		}
-
-
-		this.render( ppElem.render() );
 	}
+
+}))
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/pp-router.js@1.1.0/pp-router.min.js" ></script>
+<script src="http://localhost/pp-router/pp-router.js"></script>
+<script type="text/javascript">
+	
 
 	var router = new ppRouter(    
 		{
-		    "/":new ppView({
-
+		    "/":{
 		    	view:"main",
-
 		    	model:{
-
 		    		title:"esto es un titulo"
-
 		    	},
-		    	elemJson:{
+		    	events:{
+		    		"h1|click":"hello"
+		    	},
+		    	templateJson:{
 		    		tag:"h1",
+		    		attr:{
+		    			class:"is-visible otro-mas"
+		    		},
 		    		beforeContent:"Hello Work",
 		    		children:[{
 		    			tag:"span",
@@ -69,24 +145,22 @@
 		    				style:"color:red;"
 		    			}
 		    		}]
-		    	},
+		    	},		    
 		    	methods:{
-
-		    		hello:function(){
-
+		    		hello:function( event ){
+	    				console.log( event.currentTarget.getAttribute("class") );
 		    			console.log( "Esto es un hello desde el h1" );
-
 		    		}
-		    	},		    	
-		    	controller:function(){		    	
-	    			    		
-		    		
-
-		    	}
-		    }),
+		    	},
+		    	controller:function( params ){
+	    			console.log( this );
+		    	}		    	
+		    },
 		}
 	);
 	router.start();
+
 </script>
+
 </body>
 </html>
