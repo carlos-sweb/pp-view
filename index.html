@@ -11,11 +11,15 @@
 	<title>Document</title>
 </head>
 <body>
-<div pp-view="main" ></div>
+<div pp-view="main" >
+	
+	<h1 class="title" >Hello</h1>
+	<h4 class="title" >Hello</h4>
+</div>
 
 
 <script src="https://cdn.jsdelivr.net/npm/pp-model.js@1.0.7/pp-model.min.js" ></script>
-<script src="https://cdn.jsdelivr.net/npm/pp-elementjson.js@1.0.2/pp-elementjson.min.js" ></script>
+<script src="https://cdn.jsdelivr.net/npm/pp-elementjson.js@1.0.3/pp-elementjson.js" ></script>
 <script src="https://cdn.jsdelivr.net/npm/pp-events@1.0.5/pp-events.min.js" ></script>
 
 
@@ -36,30 +40,112 @@
 ));
 
 })( this,(function( _model , _elementjson , _events ) {
+
+	var isUndefined = function( value ){
+		return typeof value === 'undefined';
+	}
+
+	var isNull = function( value ){
+		return value === null;		
+	}
+
+	var has = function( value , property){
+		return value.hasOwnProperty( property );
+	}
+
+
+	var getKeys = function( value ){
+		return Object.keys( value );
+	}
+
+	var isElement = function( value ){
+		return !!( value && value.nodeType === 1 );
+	}
+
+	/*
+	*@name isFunction
+	*@type Function
+	*@description es una funcion que verifica is el parametro
+	*entregado es una funcion
+	*/
+	function isFunction(func) {
+		return func && {}.toString.call(func) === '[object Function]';
+	}
+	/*
+	*@name render
+	*@type render
+	*@params
+	*	@element = element html
+	*   @html = html code
+	*@description: renderizamos el html en el elemento
+	*/
+	function render( element , html ){
+		
+		if( typeof html === 'string' ){
+
+			element.innerHTML = html;
+
+		}
+
+	}
+
+	function getDefaultOptions(){
+		return {
+
+		}
+	}
 	
 
 	return function( options ){
+		
 
-		this.render = function( html ){
 
-			if( typeof html == 'string' && this.element != null ){
-				this.element.innerHTML = html;
-			}
-			// AQUI EJECUTAMOS LOS EVENTOS			
-			var keys = Object.keys(options.events);
+		this.options = isUndefined(options) || isNull(options) ? getDefaultOptions(): options ;
+
+
+		this.render = function( html ){			
+
+			// renderizamos si se cumplen las condiciones
+			if( isElement(this.element) && html !== ''  ){ render( this.element , html ) };
+
+			// AQUI EJECUTAMOS LOS EVENTOS
+			// !! PODRIAMOS VERIFICAR QUE SEA UN OBJECTO
+			var keys = getKeys(this.options.events);
+
 			for( var i = 0 ; i < keys.length ; i++ ){
+				// id del objeto
+				var id = keys[i],
+				// valor de la clave que corresonde  a la funcion a llamar
+				func = this.options.events[id],
+				// example : 'h1|click':'myFunction'
+				elementEvent = id.split("|"),
+				// verificamos que tengamos determinado el elemento y el evento
+				// a escuchar
+				element = has(elementEvent , 0 ) ? elementEvent[0] : null,
 
-				var element = keys[i].split("|")[0]
-				var event = keys[i].split("|")[1]
-				console.log( element );
+				event = has(elementEvent , 1 ) ? elementEvent[1] : null,
+				// creamos a todos las lista de elementos
+				elements = !isNull(element) ?  this.element.querySelectorAll( element ) : null;
 
-				var elements = document.querySelectorAll( element );
-				elements.forEach(( elem )=>{
+				if( !isNull(elements)  ){
 
-					elem.addEventListener(event, options.methods[options.events[keys[i]]] )
+					elements.forEach(function( elem ){
 
-				});
+						if( isFunction( this.options.methods[func] ) ){
+							
+							var funcCall = this.options.methods[func];
+
+							elem.addEventListener(event,function(ev){								
+								funcCall( ev.currentTarget , this.model , ev );
+							
+							}.bind(this))
+						}
+					}.bind(this));
+
+				}				
+
 				console.log(elements);
+
 			}
 			// AQUI EJECUTAMOS LOS EVENTOS
 		}
@@ -81,9 +167,6 @@
 		options.controller :  function(){};
 		
 
-
-
-				
 		// MODEL
 		var model =  isFunction( _model )  ?  new _model() : null;
 
@@ -95,7 +178,16 @@
 		// ELEMENTjSON
 		var elemjson = isFunction(_elementjson) ?  new _elementjson() : null;
 
-		if( isFunction(elemjson.load) ){ elemjson.load( options.templateJson || [] ); };
+
+		if( isFunction(elemjson.load) ){ 
+
+			if( options.templateJson !== undefined ){
+
+				elemjson.load( options.templateJson || null );
+
+			}
+
+		}
 		
 
 		var view = options.view || null;
@@ -105,62 +197,65 @@
 		}
 		// RENDERIZAMOS A BASE DE ELEMENTJSON
 		if( isFunction(elemjson.render) ){
+			
 			this.render( elemjson.render() );
+
 		};
 
 
-		
-
+		// Ejecutramos el controlador para que el usuario pueda contraolar 
+		// la vista a sus necesidades
+		this.controller();
 	}
 
 }))
+
 
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/pp-router.js@1.1.0/pp-router.min.js" ></script>
 <script src="http://localhost/pp-router/pp-router.js"></script>
 <script type="text/javascript">
-	
+var config = {
+	view:"main",
+	model:{
+		title:"esto es un titulo"
+	},
+	events:{
+		"h1|click":"hello"
+	},
+	templateJson:{
+		tag:"h1",
+		attr:{
+			class:"is-visible otro-mas"
+		},
+		beforeContent:"Hello Work",
+		children:[{
+			tag:"span",
+			beforeContent:"HOLA",
+			attr:{
+				style:"color:red;"
+			}
+		}]
+	},		    
+	methods:{
+		hello:function( element , model , event ){
+			
+			//console.log( event.currentTarget.getAttribute("class") );
+			//console.log( "Esto es un hello desde el h1" );
 
-	var router = new ppRouter(    
-		{
-		    "/":{
-		    	view:"main",
-		    	model:{
-		    		title:"esto es un titulo"
-		    	},
-		    	events:{
-		    		"h1|click":"hello"
-		    	},
-		    	templateJson:{
-		    		tag:"h1",
-		    		attr:{
-		    			class:"is-visible otro-mas"
-		    		},
-		    		beforeContent:"Hello Work",
-		    		children:[{
-		    			tag:"span",
-		    			beforeContent:"HOLA",
-		    			attr:{
-		    				style:"color:red;"
-		    			}
-		    		}]
-		    	},		    
-		    	methods:{
-		    		hello:function( event ){
-	    				console.log( event.currentTarget.getAttribute("class") );
-		    			console.log( "Esto es un hello desde el h1" );
-		    		}
-		    	},
-		    	controller:function( params ){
-	    			console.log( this );
-		    	}		    	
-		    },
 		}
-	);
-	router.start();
+	},
+	controller:function( params ){
+
+		// Initialize 
+
+		//console.log( this );
+	}		    	
+}
+
+var view = new ppView(config);
 
 </script>
-
 </body>
 </html>
