@@ -12,9 +12,10 @@
 	<h4 class="title" >Hello</h4>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/pp-model.js@1.0.7/pp-model.min.js" ></script>
+
 <script src="https://cdn.jsdelivr.net/npm/pp-elementjson.js@1.0.3/pp-elementjson.js" ></script>
 <script src="https://cdn.jsdelivr.net/npm/pp-events@1.0.5/pp-events.min.js" ></script>
+<script src="https://cdn.jsdelivr.net/npm/pp-model.js@1.0.7/pp-model.min.js" ></script>
 
 <script type="text/javascript" >
 "use strict";
@@ -26,7 +27,7 @@
 
 	(global = global || self, (function () {
 
-    var exports = global.ppView = factory( ppModel , ppElementjson , ppEvents );
+		var exports = global.ppView = factory( global.ppModel  ,global. ppElementjson , global.ppEvents );
 
 	}()
 
@@ -114,6 +115,7 @@
 	*@description: capturamos el elemento html para el prcedimeinto de la clase
 	*/
 	function getView( options ){
+		if(!isObject(options)){ ErrorThrow('options dont defined')};
 		// El Mensaje de error  a analizar
 		var msgError = 'View dont defined';
 		// Defininedo la view
@@ -136,7 +138,17 @@
 		return view;
 	}
 
+	// ===========================================================================
+	/*
+	*@name getView
+	*@type Function
+	*@params
+	*	@options {Object}= La configuración principal
+	*@description: capturamos el elemento html para el prcedimeinto de la clase
+	*/
 	function getTemplate(options){
+
+			if(!isObject(options)){ return "";}
 
 			return has( options ,  'template' ) ? (
 				//Verificamos que sea una String
@@ -150,9 +162,70 @@
 			) : undefined;
 
 	}
+	// ===========================================================================
+	/*
+	*@name getEvents
+	*@type Function
+	*@params
+	*	@options {Object}= La configuración principal
+	*@description: capturamos los events para ser procesados
+	*/
+	function getEvents( options ){
+		var events = [];
+		if( has( options , 'events' ) ){
+			var events = options.events;
+			if( isObject( events ) ){
+				var eventsKey = getKeys( events );
+				for( var i = 0; i < eventsKey.length ; i++ ){
+					var tagEvent = eventsKey[i].split("|");
+					var method = events[ eventsKey[i] ];
+					if( tagEvent.length === 2 ){
+						var _Tag = tagEvent[0];
+						var _Event = tagEvent[1];
+							//var elementLisen = this.view.querySelectorAll(_Tag);
+							//for( var a = 0; a < elementLisen.length ; a++ ){
+										/*
+										elementLisen[a].addEventListener(_Event,function(e){
+												if( isFunction( options.methods[method] ) ){
+														options.methods[method]( e.currentTarget , this.model , e  );
+												}
+										}.bind(this));
+										*/
 
+							//}
+					}
+				}
+			}
+		}
 
+		return events;
 
+	}
+
+	// ===========================================================================
+	/*
+	*@name getModel
+	*@type Function
+	*@params
+	*	@options {Object}= La configuración principal
+	*@description: Crea revisando el ppModel
+	*/
+	function getModel( options ){
+
+			if( !isObject(options) ){ return {}; };
+			// Verificamos que se halla pasado un modelo
+			// se se ocupa la extendio pp-model se activa
+			// en caso contrato solo se crea un objeto simple
+			var modelObject = has( options , 'model' )  ? (
+				isObject(options.model) ? options.model : {}
+			) :  {} ;
+
+			var model =  isFunction( _model )  ?  new _model() : modelObject;
+
+			return isFunction( model ) ? new model( modelObject ) : model;
+
+	}
+	// ===========================================================================
 	return function( options ){
 		//==========================================================================
 		if( options === undefined ){
@@ -185,36 +258,15 @@
 		}
 		//==========================================================================
 		//===== Procesamos el modelo
-		var model =  isFunction( _model )  ?  new _model() : null;
-		this.model = model == null ?  options.model :  new model(options.model) ;
+		this.model = getModel( options );
 		//==========================================================================
 		//======= RENDERIZAMOS EL TEMPLATE SI ES DIFERENTE A UNDEFINED
 	 	!isUndefined(this.template) && render( this.view , this.template );
+		//======= ENLAZAMOS LOS EVENTOS CON EL RENDERIZADO si ubiese
+		this.events = getEvents( options );
 
-		if( has( options , 'events' ) ){
-			var events = options.events;
-			if( isObject( events ) ){
-				var eventsKey = getKeys( events );
-				for( var i = 0; i < eventsKey.length ; i++ ){
-					var tagEvent = eventsKey[i].split("|");
-					var method = events[ eventsKey[i] ];
-					if( tagEvent.length === 2 ){
-						var _Tag = tagEvent[0];
-						var _Event = tagEvent[1];
-							var elementLisen = this.view.querySelectorAll(_Tag);
-							for( var a = 0; a < elementLisen.length ; a++ ){
+		console.log( this.events );
 
-										elementLisen[a].addEventListener(_Event,function(e){
-												if( isFunction( options.methods[method] ) ){
-														options.methods[method]( e.currentTarget , this.model , e  );
-												}
-										}.bind(this));
-
-							}
-					}
-				}
-			}
-		}
 
 		/*
 		// EVENTS
