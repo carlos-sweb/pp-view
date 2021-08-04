@@ -7,6 +7,7 @@
 	<link rel="stylesheet" href="master.css">
 </head>
 <body>
+
 <div pp-view="main" id="content" >
 	<h1 class="title" >Hello</h1>
 	<h4 class="title" >Hello</h4>
@@ -170,18 +171,61 @@
 	*	@options {Object}= La configuración principal
 	*@description: capturamos los events para ser procesados
 	*/
-	function getEvents( options ){
-		var events = [];
+	function getEvents( options , view , methods ,model ){
+		// Definimos un contendor para los eventos typo object
+		// -------------------------------------------------------------------------
+		var events = {};
+		// -------------------------------------------------------------------------
+		// verificamos que la llave events exista en el objeto principal
 		if( has( options , 'events' ) ){
+			// -----------------------------------------------------------------------
 			var events = options.events;
+			// -----------------------------------------------------------------------
+			// Verificamos que sea un objeto
 			if( isObject( events ) ){
+			// -----------------------------------------------------------------------
+				// ---------------------------------------------------------------------
+				// Obtenemos las llaves para ser procesadas
 				var eventsKey = getKeys( events );
+				// ---------------------------------------------------------------------
 				for( var i = 0; i < eventsKey.length ; i++ ){
+					// -------------------------------------------------------------------
+					// Obtenemos la key example "h1,h2|click"
 					var tagEvent = eventsKey[i].split("|");
+					// -------------------------------------------------------------------
+					// Obtenemos el valor que corresponde al methodo a ejecutar "hello"
 					var method = events[ eventsKey[i] ];
+					// -------------------------------------------------------------------
+					// Verificamos que hallan por lo menos dos claves (tag|event)
 					if( tagEvent.length === 2 ){
-						var _Tag = tagEvent[0];
-						var _Event = tagEvent[1];
+						if( tagEvent[0] !== "" && tagEvent[1] !== "" ){
+							// ---------------------------------------------------------------
+							// Verificamos que se hallan declarado mas de un elemento
+							//html por example h1,h2|click
+							var _Tags = tagEvent[0].split(",");
+							// ---------------------------------------------------------------
+							// Nombre del evento que deseamos enlazar con el metodo
+							var _Event = tagEvent[1];
+							// ---------------------------------------------------------------
+							// recorremos todos los tag
+							for( var ii = 0; ii < _Tags.length ; ii++ ){
+									// Tag Individual
+									var _Tag = _Tags[ii].trim();
+									// verificamos que la view sea un elemento html
+									if( isElement( view ) && _Tag !== "" ){
+										// ---------------------------------------------------------
+										// Tratamos de capturar todos los elementos html
+										try{ var elementLisen = view.querySelectorAll(_Tag); }catch(ErrorelementLisen){ var elementLisen = null;}
+										if(!isNull(elementLisen)){
+											for( var iii = 0; iii < elementLisen.length ; iii++ ){
+													elementLisen[iii].addEventListener(_Event,function(_event){
+															methods[method]( _event.currentTarget , model , _event );
+													});
+											}
+										}// no sea null
+									}// view debe ser elemento
+							}// for los tags
+						}// if ( verificamos que las cadenas no esten vacias )
 							//var elementLisen = this.view.querySelectorAll(_Tag);
 							//for( var a = 0; a < elementLisen.length ; a++ ){
 										/*
@@ -193,11 +237,10 @@
 										*/
 
 							//}
-					}
-				}
-			}
-		}
-
+					}//if( 2 length min )
+				} // for all events
+			} // if( isObject  )
+		}// --- if( has( options , events) )
 		return events;
 
 	}
@@ -259,36 +302,18 @@
 		//==========================================================================
 		//===== Procesamos el modelo
 		this.model = getModel( options );
+
+		this.methods = has( options , 'methods' ) ? (
+			isObject( options.methods ) ? options.methods : {}
+		) : {};
+
 		//==========================================================================
 		//======= RENDERIZAMOS EL TEMPLATE SI ES DIFERENTE A UNDEFINED
 	 	!isUndefined(this.template) && render( this.view , this.template );
 		//======= ENLAZAMOS LOS EVENTOS CON EL RENDERIZADO si ubiese
-		this.events = getEvents( options );
+		// Hay que trabajar aqui
+		getEvents( options , this.view , this.methods , this.model );
 
-		console.log( this.events );
-
-
-		/*
-		// EVENTS
-		this.events = isFunction(_events) ? new _events() : null ;
-		// ELEMENTjSON
-		var elemjson = isFunction(_elementjson) ?  new _elementjson() : null;
-		//==========================================================================
-		//====== RENDER SECTION
-		if( !isNull( this.TYPE_TEMPLATE ) ){
-
-		}
-		//==========================================================================
-		//====== EVENTS SECTION
-		if( has( options , 'events' ) ){
-				var keys = getKeys( options.events );
-				for( var i = 0 ; i < keys.length ; i++ ){
-							console.log( keys[i] );
-
-				}
-		}
-		*/
-		//==========================================================================
 
 	}
 
@@ -303,18 +328,18 @@
 var config = {
 	view: 'main',
 	model:{
+		count:0,
 		title:"esto es un titulo"
 	},
 	events:{
-		"#header1|click":"hello",
+		"#header1,span[data-click=hello]|click":"hello"
 	},
-	template:'<h1 id="header1" >Hello Word</h1>',
+	template:'<h1 id="header1" >Hello Word</h1> <span data-click="hello" >Soy un Span</span>',
 	methods:{
 		hello:function( element , model , event ){
-			console.log( element );
-			console.log( model.get("title") );
-			console.log( model.set("title","Otro titulo") );
-			console.log( event );
+
+				console.log( element.tagName );
+
 		}
 	},
 	controller:function( params ){
