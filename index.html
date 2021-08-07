@@ -13,10 +13,9 @@
 	<h4 class="title" >Hello</h4>
 </div>
 
-
 <script src="https://cdn.jsdelivr.net/npm/pp-elementjson.js@1.0.3/pp-elementjson.js" ></script>
-<script src="https://cdn.jsdelivr.net/npm/pp-events@1.0.5/pp-events.min.js" ></script>
-<script src="https://cdn.jsdelivr.net/npm/pp-model.js@1.0.7/pp-model.min.js" ></script>
+<script src="https://cdn.jsdelivr.net/npm/pp-events@latest/pp-events.min.js" ></script>
+<script src="https://cdn.jsdelivr.net/npm/pp-model.js@latest/pp-model.min.js" ></script>
 
 <script type="text/javascript" >
 "use strict";
@@ -83,7 +82,7 @@
 	*@description: renderizamos el html en el elemento
 	*/
 	function render( element , html ){
-		if( typeof html === 'string' ){
+		if( isString( html ) ){
 			if( isElement( element ) ){
 				element.innerHTML = html;
 			}
@@ -219,7 +218,11 @@
 										if(!isNull(elementLisen)){
 											for( var iii = 0; iii < elementLisen.length ; iii++ ){
 													elementLisen[iii].addEventListener(_Event,function(_event){
-															methods[method]( _event.currentTarget , model , _event );
+															try{
+																methods[method]( _event.currentTarget , model , _event );
+															}catch(ErrorMethod){
+
+															};
 													});
 											}
 										}// no sea null
@@ -254,7 +257,6 @@
 	*@description: Crea revisando el ppModel
 	*/
 	function getModel( options ){
-
 			if( !isObject(options) ){ return {}; };
 			// Verificamos que se halla pasado un modelo
 			// se se ocupa la extendio pp-model se activa
@@ -262,11 +264,9 @@
 			var modelObject = has( options , 'model' )  ? (
 				isObject(options.model) ? options.model : {}
 			) :  {} ;
-
+			// Aqui prodiamos agregar valores pre definidos al modelo
 			var model =  isFunction( _model )  ?  new _model() : modelObject;
-
 			return isFunction( model ) ? new model( modelObject ) : model;
-
 	}
 	// ===========================================================================
 	return function( options ){
@@ -314,22 +314,37 @@
 		// Hay que trabajar aqui
 		getEvents( options , this.view , this.methods , this.model );
 
-
+		//==========================================================================
+    //======= Ejecutamos el controllador
+		if( has(options,"controller") ){
+			//========================================================================
+			//==========================   CONTROLLER   ==============================
+			if( isFunction( options.controller ) ){
+				this.controller = options.controller;
+				this.controller( this.view , this.model );
+			}
+		}
+		//==========================================================================
 	}
-
 }))
-
-
 </script>
 <script src="https://cdn.jsdelivr.net/npm/pp-router.js@2.1.1/pp-router.min.js" ></script>
 <script type="text/javascript">
-
 
 var config = {
 	view: 'main',
 	model:{
 		count:0,
 		title:"esto es un titulo"
+	},
+	// Hay que Trabjar aqui
+	observe:{
+		title:function( a , b , next ){
+
+				console.log("Title change");
+
+				next();
+		}
 	},
 	events:{
 		"#header1,span[data-click=hello]|click":"hello"
@@ -338,14 +353,16 @@ var config = {
 	methods:{
 		hello:function( element , model , event ){
 
+				console.log( model.get("count") );
 				console.log( element.tagName );
+				model.set(count,model.get("model")++);
+
 
 		}
 	},
-	controller:function( params ){
-		console.log("Estamos aplicando el controlador");
-		// Initialize
-		//console.log( this );
+	controller:function( element , model ){
+
+
 	}
 }
 
