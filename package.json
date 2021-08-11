@@ -1,0 +1,27 @@
+{
+  "name": "pp-view",
+  "version": "1.0.0",
+  "description": "Simple View manipulator ",
+  "main": "pp-view.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/carlos-sweb/pp-view.git"
+  },
+  "keywords": [
+    "view"
+  ],
+  "author": "Carlos Illesca",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/carlos-sweb/pp-view/issues"
+  },
+  "homepage": "https://github.com/carlos-sweb/pp-view#readme",
+  "dependencies": {
+    "pp-events": "^1.2.0",
+    "pp-is": "^1.0.2",
+    "pp-model.js": "^1.2.2"
+  }
+}
