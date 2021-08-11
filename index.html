@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Document</title>
+	<title>pp-view - Manipulation View</title>
 	<link rel="stylesheet" href="master.css">
 </head>
 <body>
@@ -14,322 +14,13 @@
 	</div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/pp-elementjson.js@1.0.3/pp-is.js" ></script>
+<script src="https://cdn.jsdelivr.net/npm/pp-is@latest/pp-is.js" ></script>
 <script src="https://cdn.jsdelivr.net/npm/pp-events@latest/pp-events.min.js" ></script>
 <script src="https://cdn.jsdelivr.net/npm/pp-model.js@latest/pp-model.min.js" ></script>
-<script src="https://cdn.jsdelivr.net/npm/pp-elementjson.js@1.0.3/pp-elementjson.js" ></script>
-
-<script type="text/javascript" >
-(function(global , factory ){
-
-  	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-
-  	typeof define === 'function' && define.amd ? define('ppView', factory) :
-
-	(global = global || self, (function () {
-
-		var exports = global.ppView = factory( global.ppModel  ,global. ppElementjson , global.ppEvents );
-
-	}()
-
-));
-
-})( this,(function( _model , _elementjson , _events ) {
-	// ===========================================================================
-	function isObject(value) {
-		return value && {}.toString.call(value) === '[object Object]';
-	}
-	// ===========================================================================
-	function isString(value) {
-		return value && {}.toString.call(value) === '[object String]';
-	}
-	// ===========================================================================
-	var isUndefined = function( value ){
-		return value && {}.toString.call(value) === '[object Undefined]';
-	}
-	// ===========================================================================
-	var isNull = function( value ){
-		return value === null;
-	}
-	// ===========================================================================
-	var has = function( value , property){
-		return value.hasOwnProperty( property );
-	}
-	// ===========================================================================
-	var getKeys = function( value ){
-		return Object.keys( value );
-	}
-	// ===========================================================================
-	var isElement = function( value ){
-		return !!( value && value.nodeType === 1 );
-	}
-	// ===========================================================================
-	/*
-	*@name isFunction
-	*@type Function
-	*@description es una funcion que verifica is el parametro
-	*entregado es una funcion
-	*/
-	function isFunction(func) {
-		return func && {}.toString.call(func) === '[object Function]';
-	}
-	// ===========================================================================
-	/*
-	*@name render
-	*@type render
-	*@params
-	*	@element = element html
-	*   @html = html code
-	*@description: renderizamos el html en el elemento
-	*/
-	function render( element , html ){
-		if( isString( html ) ){
-			if( isElement( element ) ){
-				element.innerHTML = html;
-			}
-		}
-	}
-
-
-	// ===========================================================================
-	/*
-	*@name ErrorThrow
-	*@type Function
-	*@params
-	*	@msg {String}= Mensaje
-	*@description: Lanzamos un error
-	*/
-	function ErrorThrow( msg ){
-		throw msg;
-	}
-
-	function isUrlHttp( url ){
-		return isString( url );
-	}
-
-	// ===========================================================================
-	/*
-	*@name getView
-	*@type Function
-	*@params
-	*	@options {Object}= La configuración principal
-	*@description: capturamos el elemento html para el prcedimeinto de la clase
-	*/
-	function getView( options ){
-		if(!isObject(options)){ ErrorThrow('options dont defined')};
-		// El Mensaje de error  a analizar
-		var msgError = 'View dont defined';
-		// Defininedo la view
-		var view = has( options , 'view' ) ? (
-			isString( options.view ) ? (
-					/* Es una cadena verificamos que no este vacia*/
-				 options.view !== '' ? (
-					// En este punto es una cadena y no esta vacia
-					!isNull( document.querySelector('[pp-view='+options.view+']') ) ?
-					document.querySelector('[pp-view='+options.view+']') : ErrorThrow(msgError)
-				) : ErrorThrow(msgError)
-			 ):
-			/* lo que recivimos no es un string*/
-			(
-				isElement( options.view ) ? options.view :
-				/* en este punto existe la clave pero no es un string ni element html*/
-				ErrorThrow(msgError)
-			)
-		):/* No existe la llave view - un problema*/  ErrorThrow(msgError);
-		return view;
-	}
-
-	// ===========================================================================
-	/*
-	*@name getView
-	*@type Function
-	*@params
-	*	@options {Object}= La configuración principal
-	*@description: capturamos el elemento html para el prcedimeinto de la clase
-	*/
-	function getTemplate(options){
-
-			if(!isObject(options)){ return "";}
-
-			return has( options ,  'template' ) ? (
-				//Verificamos que sea una String
-				isString( options.template ) ? options.template : ErrorThrow('Must template option will be string')
-			) : has( options , 'templateJson'  ) ? (
-				//Verificamos que sea un object
-				isObject( options.templateJson ) ? options.templateJson : ErrorThrow('Must templateJson option will be object')
-			) : has( options , 'templateUrl' ) ? (
-				//Verificamos que sea Url
-				isUrlHttp( options.templateUrl ) ? options.templateUrl : ErrorThrow('Must templateUrl option will be string url')
-			) : undefined;
-
-	}
-	// ===========================================================================
-	/*
-	*@name getEvents
-	*@type Function
-	*@params
-	*	@options {Object}= La configuración principal
-	*@description: capturamos los events para ser procesados
-	*/
-	function getEvents( options , view , methods ,model ){
-		// Definimos un contendor para los eventos typo object
-		// -------------------------------------------------------------------------
-		var events = {};
-		// -------------------------------------------------------------------------
-		// verificamos que la llave events exista en el objeto principal
-		if( has( options , 'events' ) ){
-			// -----------------------------------------------------------------------
-			var events = options.events;
-			// -----------------------------------------------------------------------
-			// Verificamos que sea un objeto
-			if( isObject( events ) ){
-			// -----------------------------------------------------------------------
-				// ---------------------------------------------------------------------
-				// Obtenemos las llaves para ser procesadas
-				var eventsKey = getKeys( events );
-				// ---------------------------------------------------------------------
-				for( var i = 0; i < eventsKey.length ; i++ ){
-					// -------------------------------------------------------------------
-					// Obtenemos la key example "h1,h2|click"
-					var tagEvent = eventsKey[i].split("|");
-					// -------------------------------------------------------------------
-					// Obtenemos el valor que corresponde al methodo a ejecutar "hello"
-					var method = events[ eventsKey[i] ];
-					// -------------------------------------------------------------------
-					// Verificamos que hallan por lo menos dos claves (tag|event)
-					if( tagEvent.length === 2 ){
-						if( tagEvent[0] !== "" && tagEvent[1] !== "" ){
-							// ---------------------------------------------------------------
-							// Verificamos que se hallan declarado mas de un elemento
-							//html por example h1,h2|click
-							var _Tags = tagEvent[0].split(",");
-							// ---------------------------------------------------------------
-							// Nombre del evento que deseamos enlazar con el metodo
-							var _Event = tagEvent[1];
-							// ---------------------------------------------------------------
-							// recorremos todos los tag
-							for( var ii = 0; ii < _Tags.length ; ii++ ){
-									// Tag Individual
-									var _Tag = _Tags[ii].trim();
-									// verificamos que la view sea un elemento html
-									if( isElement( view ) && _Tag !== "" ){
-										// ---------------------------------------------------------
-										// Tratamos de capturar todos los elementos html
-										try{ var elementLisen = view.querySelectorAll(_Tag); }catch(ErrorelementLisen){ var elementLisen = null;}
-										if(!isNull(elementLisen)){
-											for( var iii = 0; iii < elementLisen.length ; iii++ ){
-													elementLisen[iii].addEventListener(_Event,function(_event){
-															try{
-																methods[method]( _event.currentTarget , model , _event );
-															}catch(ErrorMethod){
-
-															};
-													});
-											}
-										}// no sea null
-									}// view debe ser elemento
-							}// for los tags
-						}// if ( verificamos que las cadenas no esten vacias )
-							//var elementLisen = this.view.querySelectorAll(_Tag);
-							//for( var a = 0; a < elementLisen.length ; a++ ){
-										/*
-										elementLisen[a].addEventListener(_Event,function(e){
-												if( isFunction( options.methods[method] ) ){
-														options.methods[method]( e.currentTarget , this.model , e  );
-												}
-										}.bind(this));
-										*/
-
-							//}
-					}//if( 2 length min )
-				} // for all events
-			} // if( isObject  )
-		}// --- if( has( options , events) )
-		return events;
-
-	}
-
-	// ===========================================================================
-	/*
-	*@name getModel
-	*@type Function
-	*@params
-	*	@options {Object}= La configuración principal
-	*@description: Crea revisando el ppModel
-	*/
-	function getModel( options ){
-			if( !isObject(options) ){ return {}; };
-			// Verificamos que se halla pasado un modelo
-			// se se ocupa la extendio pp-model se activa
-			// en caso contrato solo se crea un objeto simple
-			var modelObject = has( options , 'model' )  ? (
-				isObject(options.model) ? options.model : {}
-			) :  {} ;
-			// Aqui prodiamos agregar valores pre definidos al modelo
-			var model =  isFunction( _model )  ?  new _model() : modelObject;
-			return isFunction( model ) ? new model( modelObject ) : model;
-	}
-	// ===========================================================================
-	return function( options ){
-		//==========================================================================
-		if( options === undefined ){
-			console.error('Crital Error')
-			console.error( 'pp-view say : Must provide object config' );
-			return;
-		}
-		//==========================================================================
-		if( !isObject( options ) ){
-			console.error('Crital Error')
-			console.error( 'pp-view say : Must provide object config' );
-			return;
-		}
-		// =========================================================================
-		// ===== IDENTIFICACIÓN DEL ELEMENTO A PROCESAR
-		try{
-				this.view = getView( options );
-		}catch( viewError ){
-				console.error( "Critical Error: ");
-				console.error( "pp-view say : "+viewError );
-				return;
-		}
-		// =========================================================================
-		// Definimos el tipo de template que vamos a procesar
-		// SI NO ESTA
-		try{
-			this.template = getTemplate( options );
-		}catch( ErrorTemplate ){
-				console.warn( ErrorTemplate );
-		}
-		//==========================================================================
-		//===== Procesamos el modelo
-		this.model = getModel( options );
-
-		this.methods = has( options , 'methods' ) ? (
-			isObject( options.methods ) ? options.methods : {}
-		) : {};
-
-		//==========================================================================
-		//======= RENDERIZAMOS EL TEMPLATE SI ES DIFERENTE A UNDEFINED
-	 	!isUndefined(this.template) && render( this.view , this.template );
-		//======= ENLAZAMOS LOS EVENTOS CON EL RENDERIZADO si ubiese
-		// Hay que trabajar aqui
-		getEvents( options , this.view , this.methods , this.model );
-
-		//==========================================================================
-    //======= Ejecutamos el controllador
-		if( has(options,"controller") ){
-			//========================================================================
-			//==========================   CONTROLLER   ==============================
-			if( isFunction( options.controller ) ){
-				this.controller = options.controller;
-				this.controller( this.view , this.model );
-			}
-		}
-		//==========================================================================
-	}
-}))
-</script>
+<script src="https://cdn.jsdelivr.net/npm/pp-elementjson.js@latest/pp-elementjson.js" ></script>
+<script src="pp-view.js" ></script>
 <script src="https://cdn.jsdelivr.net/npm/pp-router.js@2.1.1/pp-router.min.js" ></script>
+
 <script type="text/javascript">
 
 var config = {
@@ -340,11 +31,8 @@ var config = {
 	},
 	// Hay que Trabjar aqui
 	observe:{
-		title:function( a , b , next ){
-
-				console.log("Title change");
-
-				next();
+		count:function( value ){
+					console.log("Estamos observando el cambio");
 		}
 	},
 	events:{
@@ -354,14 +42,14 @@ var config = {
 	methods:{
 		hello:function( element , model , event ){
 
-				console.log( model.get("count") );
-				console.log( element.tagName );
-				model.set(count,model.get("model")++);
+				model.set("count", model.get("count")+1);
 
+				console.log( model.get( "count" ) );
 
 		}
 	},
 	controller:function( element , model ){
+
 
 
 	}
