@@ -8,9 +8,10 @@
 </head>
 <body>
 
-<div pp-view="main" id="content" >
-	<h1 class="title" >Hello</h1>
-	<h4 class="title" >Hello</h4>
+<div  class="w-full flex flex-row justify-center"  >
+	<div class="flex flex-col w-96" pp-view="main" id="content" >
+				<h1 id="header1" >Hello Word</h1> <span data-click="hello" >Soy un Span</span>
+	</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/pp-elementjson.js@1.0.3/pp-elementjson.js" ></script>
@@ -18,22 +19,67 @@
 <script src="https://cdn.jsdelivr.net/npm/pp-model.js@latest/pp-model.min.js" ></script>
 
 <script type="text/javascript" >
-"use strict";
+
+(function(factory) {
+	// ===========================================================================
+  var root = typeof self == 'object' && self.self === self && self ||
+            typeof global == 'object' && global.global === global && global;
+
+  // ===========================================================================
+  if (typeof define === 'function' && define.amd) {
+    define(['ppModel', 'ppEvents', 'ppElementjson' ,'ppIs' , 'exports'],
+		function( ppModel , ppEvents , ppElementjson , ppIs , exports ) {
+      root.ppView = factory(root, exports , ppModel , ppEvents , ppElementjson , ppIs );
+    });
+	// ===========================================================================
+  } else if (typeof exports !== 'undefined') {
+    var ppModel    = {}, ppEvents = {}, ppElementjson = {}, ppIs = {};
+    try { ppModel  = require('pp-model.js'); } catch (e) {}
+		try { ppEvents = require('pp-events'); } catch (e) {}
+		try { ppElementjson  = require('pp-elementjson.js'); } catch (e) {}
+		try { ppIs  = require('pp-is'); } catch (e) {}
+    factory(root, exports, ppModel , ppEvents , ppElementjson , ppIs );
+	// ===========================================================================
+  } else {
+    root.Backbone = factory( root , exports , ppModel , ppEvents , ppElementjson , ppIs  );
+  }
+
+})(function( root , exports , _model , _events , _elementjson , _is ) {
+
+
+
 (function(global , factory ){
 
-  	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
 
-  	typeof define === 'function' && define.amd ? define('ppView', factory) :
+var root = typeof self == 'object' && self.self === self && self ||
+typeof global == 'object' && global.global === global && global;
 
+if (typeof define === 'function' && define.amd) {
+	define(['ppEvents','ppIs','exports'], function( ppEvents, ppIs , exports ) {
+		root.ppModel = factory(root, exports, ppEvents , ppIs );
+	});
+} else if (typeof exports !== 'undefined') {
+
+	var ppModel = {} , ppElementjson = {} , ppEvents = {} , ppIs = {} ;
+	try { ppEvents = require('pp-events'); } catch (e) {}
+	try { ppIs = require('pp-is'); } catch (e) {}
+	module.exports = factory( root , exports, ppEvents , ppIs );
+} else {
+	root.ppModel = factory( root , {} , root.ppModel , root.ppIs );
+}
+
+
+
+
+
+	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+	typeof define === 'function' && define.amd ? define('ppView', factory) :
 	(global = global || self, (function () {
-
-		var exports = global.ppView = factory( global.ppModel  ,global. ppElementjson , global.ppEvents );
-
+		var exports = global.ppView = factory( global.ppModel  ,global.ppElementjson , global.ppEvents );
 	}()
+	));
 
-));
-
-})( this,(function( _model , _elementjson , _events ) {
+})( this,(function( root , exports ,  _model , _elementjson , _events ) {
 	// ===========================================================================
 	function isObject(value) {
 		return value && {}.toString.call(value) === '[object Object]';
@@ -349,7 +395,7 @@ var config = {
 	events:{
 		"#header1,span[data-click=hello]|click":"hello"
 	},
-	template:'<h1 id="header1" >Hello Word</h1> <span data-click="hello" >Soy un Span</span>',
+	//template:'<h1 id="header1" >Hello Word</h1> <span data-click="hello" >Soy un Span</span>',
 	methods:{
 		hello:function( element , model , event ){
 
