@@ -17,6 +17,7 @@
 <script src="https://cdn.jsdelivr.net/npm/pp-is@latest/pp-is.js" ></script>
 <script src="https://cdn.jsdelivr.net/npm/pp-events@latest/pp-events.min.js" ></script>
 <!--<script src="https://cdn.jsdelivr.net/npm/pp-model.js@1.2.3/pp-model.min.js" ></script>-->
+<script src="https://cdn.jsdelivr.net/npm/pp-element@latest/pp-element.min.js"></script>
 <script src="node_modules/pp-model.js/pp-model.js" ></script>
 <script src="https://cdn.jsdelivr.net/npm/pp-elementjson.js@latest/pp-elementjson.js" ></script>
 <script src="pp-view.js" ></script>
@@ -30,7 +31,6 @@ var config = {
 		count:0,
 		title:"esto es un titulo"
 	},
-	// Hay que Trabjar aqui
 	observe:{
 		count:function( value ){
 					console.log("Estamos observando el cambio");
@@ -44,12 +44,14 @@ var config = {
 		hello:function( element , model , event ){
 
 				model.set("count", model.get("count")+1);
-
 				console.log( model.get( "count" ) );
 
 		}
 	},
 	controller:function( element , model ){
+
+		console.log( element );
+
 
 
 

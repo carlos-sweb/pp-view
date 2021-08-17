@@ -5,24 +5,25 @@
 
 
 		if (typeof define === 'function' && define.amd) {
-		define(['ppModel', 'ppElementjson' , 'ppEvents' , 'ppIs' , 'exports'],
+		define(['ppModel', 'ppElementjson' , 'ppEvents' , 'ppIs' , 'ppElement' ,'exports'],
 		function( ppModel , ppElementjson , ppEvents , ppIs , exports ) {
-		  root.ppView = factory( root , exports , ppModel , ppElementjson , ppEvents , ppIs);
+		  root.ppView = factory( root , exports , ppModel , ppElementjson , ppEvents , ppIs , ppElement );
 		});
 
 		} else if (typeof exports !== 'undefined') {
 
-		var ppModel = {}, ppElementjson = {}, ppEvents = {}, ppIs = {};
+		var ppModel = {}, ppElementjson = {}, ppEvents = {}, ppIs = {},ppElement = {};
 		try { ppModel = require('pp-model.js'); } catch (e) {}
 		try { ppElementjson = require('pp-elementjson.js'); } catch (e) {}
 		try { ppEvents = require('pp-events'); } catch (e) {}
 		try { ppIs = require('pp-is'); } catch (e) {}
-		factory( root , exports , ppModel , ppElementjson , ppEvents , ppIs );
+		try { ppElement = require('pp-element'); } catch (e) {}
+		factory( root , exports , ppModel , ppElementjson , ppEvents , ppIs , ppElement );
 		} else {
-				root.ppView = factory( root , {} , root.ppModel , root.ppElementjson , root.ppEvents , root.ppIs );
+				root.ppView = factory( root , {} , root.ppModel , root.ppElementjson , root.ppEvents , root.ppIs , root.ppElement );
 		}
 
-})(function( root, exports ,  _model , _elementjson , _events , _is ) {
+})(function( root, exports ,  _model , _elementjson , _events , _is , _element ) {
 
 	// ===========================================================================
 	var has = function( value , property){
@@ -176,8 +177,10 @@
 										if(!ppIs.isNull(elementLisen)){
 											for( var iii = 0; iii < elementLisen.length ; iii++ ){
 													elementLisen[iii].addEventListener(_Event,function(_event){
+															// Verificamos que exista pp-element
+															var element = ppIs.isUndefined( _element ) ? _event.currentTarget : _element( _event.currentTarget ) ;
 															try{
-																methods[method]( _event.currentTarget , model , _event );
+																methods[method]( element  , model , _event );
 															}catch(ErrorMethod){ };
 													});
 											}
@@ -268,10 +271,14 @@
         for( var i = 0; i < observeKeys.length ; i++ ){
           if( this.model.has( observeKeys[i] ) ){
               this.model.on('changed:'+observeKeys[i],function( value ){
+
                   console.log(value);
-                console.log("Estamos escuchando el puto cambio");
+                	console.log("Estamos escuchando el puto cambio");
+
               }.bind(this));
-              console.log("Existe el modelo");
+
+              		console.log("Existe el modelo");
+
           }
         }
 
@@ -290,7 +297,8 @@
 			//==========================   CONTROLLER   ==============================
 			if( ppIs.isFunction( options.controller ) ){
 				this.controller = options.controller;
-				this.controller( this.view , this.model );
+				var element = ppIs.isUndefined(_element) ? this.view : _element( this.view );
+				this.controller( element , this.model );
 			}
 		}
 		//==========================================================================
