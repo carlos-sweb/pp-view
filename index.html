@@ -15,51 +15,59 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/pp-is@latest/pp-is.js" ></script>
-<script src="https://cdn.jsdelivr.net/npm/pp-events@latest/pp-events.min.js" ></script>
-<!--<script src="https://cdn.jsdelivr.net/npm/pp-model.js@1.2.3/pp-model.min.js" ></script>-->
+<script src="https://cdn.jsdelivr.net/npm/pp-events@latest/pp-events.js" ></script>
+<script src="https://cdn.jsdelivr.net/npm/pp-model.js@latest/pp-model.min.js" ></script>
 <script src="https://cdn.jsdelivr.net/npm/pp-element@latest/pp-element.min.js"></script>
-<script src="node_modules/pp-model.js/pp-model.js" ></script>
 <script src="https://cdn.jsdelivr.net/npm/pp-elementjson.js@latest/pp-elementjson.js" ></script>
 <script src="pp-view.js" ></script>
 <script src="https://cdn.jsdelivr.net/npm/pp-router.js@2.1.1/pp-router.min.js" ></script>
 
-<script type="text/javascript">
+	<script type="text/javascript">
 
-var config = {
-	view: 'main',
-	model:{
-		count:0,
-		title:"esto es un titulo"
-	},
-	observe:{
-		count:function( value ){
-					console.log("Estamos observando el cambio");
+	var config = {
+		view: 'main',
+		reactive:[
+			'text',
+			'html',
+			'class',
+			'style'
+		],
+		model:{
+			count:0,
+			title:"esto es un titulo"
+		},
+		observe:{
+			title : function( value ){
+
+
+			},
+			count:function( value ){
+
+						console.log("Estamos observando el cambio");
+
+			}
+		},
+		events:{
+			"#header1,span[data-click=hello]|click":"hello"
+		},
+		//template:'<h1 id="header1" >Hello Word</h1> <span data-click="hello" >Soy un Span</span>',
+		methods:{
+			hello:function( element , model , event ){
+
+					model.set("count", model.get("count")+1);
+					console.log( model.get( "count" ) );
+
+			}
+		},
+
+		controller:function( element , model ){
+
 		}
-	},
-	events:{
-		"#header1,span[data-click=hello]|click":"hello"
-	},
-	//template:'<h1 id="header1" >Hello Word</h1> <span data-click="hello" >Soy un Span</span>',
-	methods:{
-		hello:function( element , model , event ){
-
-				model.set("count", model.get("count")+1);
-				console.log( model.get( "count" ) );
-
-		}
-	},
-	controller:function( element , model ){
-
-		console.log( element );
-
-
-
 
 	}
-}
 
-var view = new ppView( config )
+	var view = new ppView( config )
 
-</script>
+	</script>
 </body>
 </html>

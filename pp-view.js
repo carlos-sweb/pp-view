@@ -3,7 +3,6 @@
 		var root = typeof self == 'object' && self.self === self && self ||
 		typeof global == 'object' && global.global === global && global;
 
-
 		if (typeof define === 'function' && define.amd) {
 		define(['ppModel', 'ppElementjson' , 'ppEvents' , 'ppIs' , 'ppElement' ,'exports'],
 		function( ppModel , ppElementjson , ppEvents , ppIs , exports ) {
@@ -25,6 +24,14 @@
 
 })(function( root, exports ,  _model , _elementjson , _events , _is , _element ) {
 
+	var isF = _is.isFunction ,
+	isO   = _is.isObject ,
+	isS   = _is.isString ,
+	isU   = _is.isUndefined,
+	isE   = _is.isElement,
+	isN   = _is.isNull,
+	warn  = console.warn,
+	error = console.error;
 	// ===========================================================================
 	var has = function( value , property){
 		return value.hasOwnProperty( property );
@@ -43,8 +50,8 @@
 	*@description: renderizamos el html en el elemento
 	*/
 	function render( element , html ){
-		if( ppIs.isString( html ) ){
-			if( ppIs.isElement( element ) ){
+		if( isS( html ) ){
+			if( isE( element ) ){
 				element.innerHTML = html;
 			}
 		}
@@ -62,7 +69,7 @@
 	}
 
 	function isUrlHttp( url ){
-		return ppIs.isString( url );
+		return isS( url );
 	}
 
 	// ===========================================================================
@@ -74,22 +81,22 @@
 	*@description: capturamos el elemento html para el prcedimeinto de la clase
 	*/
 	function getView( options ){
-		if(!ppIs.isObject(options)){ ErrorThrow('options dont defined')};
+		if(!isO(options)){ ErrorThrow('options dont defined')};
 		// El Mensaje de error  a analizar
 		var msgError = 'View dont defined';
 		// Defininedo la view
 		var view = has( options , 'view' ) ? (
-			ppIs.isString( options.view ) ? (
+			isS( options.view ) ? (
 					/* Es una cadena verificamos que no este vacia*/
 				 options.view !== '' ? (
 					// En este punto es una cadena y no esta vacia
-					!ppIs.isNull( document.querySelector('[pp-view='+options.view+']') ) ?
+					!isN( document.querySelector('[pp-view='+options.view+']') ) ?
 					document.querySelector('[pp-view='+options.view+']') : ErrorThrow(msgError)
 				) : ErrorThrow(msgError)
 			 ):
 			/* lo que recivimos no es un string*/
 			(
-				ppIs.isElement( options.view ) ? options.view :
+				isE( options.view ) ? options.view :
 				/* en este punto existe la clave pero no es un string ni element html*/
 				ErrorThrow(msgError)
 			)
@@ -107,14 +114,14 @@
 	*/
 	function getTemplate(options){
 
-			if(!ppIs.isObject(options)){ return "";}
+			if(!isO(options)){ return "";}
 
 			return has( options ,  'template' ) ? (
 				//Verificamos que sea una String
-				ppIs.isString( options.template ) ? options.template : ErrorThrow('Must template option will be string')
+				isS( options.template ) ? options.template : ErrorThrow('Must template option will be string')
 			) : has( options , 'templateJson'  ) ? (
 				//Verificamos que sea un object
-				ppIs.isObject( options.templateJson ) ? options.templateJson : ErrorThrow('Must templateJson option will be object')
+				isO( options.templateJson ) ? options.templateJson : ErrorThrow('Must templateJson option will be object')
 			) : has( options , 'templateUrl' ) ? (
 				//Verificamos que sea Url
 				isUrlHttp( options.templateUrl ) ? options.templateUrl : ErrorThrow('Must templateUrl option will be string url')
@@ -140,7 +147,7 @@
 			var events = options.events;
 			// -----------------------------------------------------------------------
 			// Verificamos que sea un objeto
-			if( ppIs.isObject( events ) ){
+			if( isO( events ) ){
 			// -----------------------------------------------------------------------
 				// ---------------------------------------------------------------------
 				// Obtenemos las llaves para ser procesadas
@@ -170,15 +177,15 @@
 									// Tag Individual
 									var _Tag = _Tags[ii].trim();
 									// verificamos que la view sea un elemento html
-									if( ppIs.isElement( view ) && _Tag !== "" ){
+									if( isE( view ) && _Tag !== "" ){
 										// ---------------------------------------------------------
 										// Tratamos de capturar todos los elementos html
 										try{ var elementLisen = view.querySelectorAll(_Tag); }catch(ErrorelementLisen){ var elementLisen = null;}
-										if(!ppIs.isNull(elementLisen)){
+										if(!isN(elementLisen)){
 											for( var iii = 0; iii < elementLisen.length ; iii++ ){
 													elementLisen[iii].addEventListener(_Event,function(_event){
 															// Verificamos que exista pp-element
-															var element = ppIs.isUndefined( _element ) ? _event.currentTarget : _element( _event.currentTarget ) ;
+															var element = isU( _element ) ? _event.currentTarget : _element( _event.currentTarget ) ;
 															try{
 																methods[method]( element  , model , _event );
 															}catch(ErrorMethod){ };
@@ -190,7 +197,7 @@
 						}// if ( verificamos que las cadenas no esten vacias )
 					}//if( 2 length min )
 				} // for all events
-			} // if( ppIs.isObject  )
+			} // if( isO  )
 		}// --- if( has( options , events) )
 		return events;
 	}
@@ -204,29 +211,29 @@
 	*@description: Crea revisando el ppModel
 	*/
 	function getModel( options ){
-			if( !ppIs.isObject(options) ){ return {}; };
+			if( !isO(options) ){ return {}; };
 			// Verificamos que se halla pasado un modelo
 			// se se ocupa la extendio pp-model se activa
 			// en caso contrato solo se crea un objeto simple
 			var modelObject = has( options , 'model' )  ? (
-				ppIs.isObject(options.model) ? options.model : {}
+				isO(options.model) ? options.model : {}
 			) :  {} ;
 			// Aqui prodiamos agregar valores pre definidos al modelo
-			var model =  ppIs.isFunction( _model )  ?  new _model() : modelObject;
-			return ppIs.isFunction( model ) ? new model( modelObject ) : model;
+			var model =  isF( _model )  ?  new _model() : modelObject;
+			return isF( model ) ? new model( modelObject ) : model;
 	}
 	// ===========================================================================
 	return function( options ){
 		//==========================================================================
 		if( options === undefined ){
-			console.error('Crital Error')
-			console.error( 'pp-view say : Must provide object config' );
+			error('Crital Error')
+			error( 'pp-view say : Must provide object config' );
 			return;
 		}
 		//==========================================================================
-		if( !ppIs.isObject( options ) ){
-			console.error('Crital Error')
-			console.error( 'pp-view say : Must provide object config' );
+		if( !isO( options ) ){
+			error('Crital Error')
+			error( 'pp-view say : Must provide object config' );
 			return;
 		}
 		// =========================================================================
@@ -234,8 +241,8 @@
 		try{
 				this.view = getView( options );
 		}catch( viewError ){
-				console.error( "Critical Error: ");
-				console.error( "pp-view say : "+viewError );
+				error( "Critical Error: ");
+				error( "pp-view say : "+viewError );
 				return;
 		}
 		// =========================================================================
@@ -244,47 +251,40 @@
 		try{
 			this.template = getTemplate( options );
 		}catch( ErrorTemplate ){
-				console.warn( ErrorTemplate );
+				warn( ErrorTemplate );
 		}
 		//==========================================================================
 		//===== Procesamos el modelo
 		this.model = getModel( options );
-
+		//==========================================================================
+		//======= Conectamos los observe de la data
+		if( has( options , 'observe' ) ){
+			if( isO( options.observe ) ){
+				var observeKeys = getKeys( options.observe );
+				for( var i = 0; i < observeKeys.length ; i++ ){
+					if( this.model.has( observeKeys[i] ) ){
+						// Es una funcion
+						if( isF( options.observe[observeKeys[i]] ) ){
+							this.model.on('changed:count',options.observe[observeKeys[i]].bind(this))
+						}
+						// Es una funcion
+					}
+				}
+			}
+		}
+		// =========================================================================
+		// ====== Procesamos los Observe
 		this.methods = has( options , 'methods' ) ? (
-			ppIs.isObject( options.methods ) ? options.methods : {}
+			isO( options.methods ) ? options.methods : {}
 		) : {};
-
 		//==========================================================================
 		//======= RENDERIZAMOS EL TEMPLATE SI ES DIFERENTE A UNDEFINED
-	 	!ppIs.isUndefined(this.template) && render( this.view , this.template );
+	 	!isU(this.template) && render( this.view , this.template );
 		//======= ENLAZAMOS LOS EVENTOS CON EL RENDERIZADO si ubiese
 		// Hay que trabajar aqui
 		getEvents( options , this.view , this.methods , this.model );
 
-    //==========================================================================
-		//======= Conectamos los observe de la data
-    if( has( options , 'observe' ) ){
-      if( ppIs.isObject( options.observe ) ){
-        var observeKeys = getKeys( options.observe );
-        console.log( observeKeys );
 
-        for( var i = 0; i < observeKeys.length ; i++ ){
-          if( this.model.has( observeKeys[i] ) ){
-              this.model.on('changed:'+observeKeys[i],function( value ){
-
-                  console.log(value);
-                	console.log("Estamos escuchando el puto cambio");
-
-              }.bind(this));
-
-              		console.log("Existe el modelo");
-
-          }
-        }
-
-        console.log( options.observe );
-      }
-    }
 
 
 
@@ -295,9 +295,9 @@
 		if( has(options,"controller") ){
 			//========================================================================
 			//==========================   CONTROLLER   ==============================
-			if( ppIs.isFunction( options.controller ) ){
+			if( isF( options.controller ) ){
 				this.controller = options.controller;
-				var element = ppIs.isUndefined(_element) ? this.view : _element( this.view );
+				var element = isU(_element) ? this.view : _element( this.view );
 				this.controller( element , this.model );
 			}
 		}

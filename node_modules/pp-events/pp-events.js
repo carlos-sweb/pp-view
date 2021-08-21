@@ -1,7 +1,7 @@
 /*!!
  * Power Panel Events <https://github.com/carlos-sweb/pp-events>
  * @author Carlos Illesca
- * @version 1.2.0 (2020/05/14 18:12 PM)
+ * @version 1.2.1 (2020/05/14 18:12 PM)
  * Released under the MIT License
  */
 (function(global,factory){
@@ -20,7 +20,7 @@
       root.ppEvents = factory(root, {}, root.ppIs );
     }
 
-})(this,function( root, exports , ppIs ){  
+})(this,function( root, exports , ppIs ){
 	/**
 	*@var {object} events - Container of events
 	*/
