@@ -45,7 +45,7 @@
 		events:{
 			"#header1,span[data-click=hello]|click":"hello"
 		},
-		//template:'<h1 id="header1" >Hello Word</h1> <span data-click="hello" >Soy un Span</span>',
+		template:'<h1 id="header1" >Hello Word</h1> <span data-click="hello" >Soy un Span * From template</span>',
 		methods:{
 			hello:function( element , model , event ){
 
@@ -54,15 +54,15 @@
 
 			}
 		},
-
 		controller:function( element , model ){
 
-		}
 
+
+		}
 	}
 
 	var view = new ppView( config )
-
+	
 </script>
 </body>
 </html>
