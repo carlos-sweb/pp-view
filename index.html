@@ -10,7 +10,6 @@
 
 <div  class="w-full flex flex-row justify-center"  >
 	<div class="flex flex-col w-96" pp-view="main" id="content" >
-				<h1 id="header1" >Hello Word</h1> <span data-click="hello" >Soy un Span</span>
 	</div>
 </div>
 
@@ -43,9 +42,10 @@
 			}
 		},
 		events:{
+			//"#header1,span[data-click=hello]|click":"hello"
 			"#header1,span[data-click=hello]|click":"hello"
 		},
-		template:'<h1 id="header1" >Hello Word</h1> <span data-click="hello" >Soy un Span * From template</span>',
+		template:'<button id="header1" >Add</button> <span  >Soy un Span * From template</span>',
 		methods:{
 			hello:function( element , model , event ){
 
