@@ -24,20 +24,18 @@ var view = new ppView( config )
 
 ## Property config object
 
-###view
+### view
 
-###reactive
+### reactive
 
-###reactive
+### model
 
-###model
+### observe
 
-###observe
+### events
 
-###events
+### template
 
-###template
+### methods
 
-###methods
-
-###controller
+### controller
