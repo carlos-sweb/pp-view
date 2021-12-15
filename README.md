@@ -23,19 +23,13 @@ var view = new ppView( config )
 ```
 
 ## Property config object
-
-### view
-
-### reactive
-
-### model
-
-### observe
-
-### events
-
-### template
-
-### methods
-
-### controller
+### view (type:string)
+### reactive (type:array)
+### model (type:object)
+### observe (type:object)
+### events (type:object)
+### template (type:string)
+### templateObject (type:object)
+### templateUrl (type:string)
+### methods (type:object)
+### controller (type:object)
